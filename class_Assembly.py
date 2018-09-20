@@ -156,7 +156,8 @@ class assembly(product):
         out_list = sorted(out_list,key=itemgetter(0))
         attrib_typ = [self.convert_attr_to_code(a)[0][0] for a in attrib] # Converting to code for filtering
         if -1 in attrib_typ:            
-            neg_list = [[ances.convert_attr_to_code(attrib[ind])[0][0]-1,attrib[ind]] for ind in range(len(attrib)) if attrib_typ[ind]==-1] #the index and value of locally absent attributes
+            neg_list = [[ances.convert_attr_to_code(attrib[ind])[0][0]-1,attrib[ind]]\
+                         for ind in range(len(attrib)) if attrib_typ[ind]==-1] #the index and value of locally absent attributes
             attrib = [attrib[ind] for ind in range(len(attrib)) if attrib_typ[ind]!=-1] #Filtering
             [attrib.insert(o[0],o[1]) for o in out_list] #Inserting local attributes, at the correct place
             # Ensuring the values are inserted in the correct place 
@@ -574,8 +575,8 @@ class assembly(product):
                     p_cont.extend(p)
                     r_cont.extend(r)
                     if c_cont[0][comp_ind]!='':
-                        c_cont.insert(0,c_cont[0].copy())
-                        if self.attribs!=[]:                    
+                        c_cont.insert(0,c_cont[0].copy()) #Putting the Sub-Assembly name at the top of the components list
+                        if self.attribs!=[]: # Will have p_cont, Updating Line Numbers                   
                             for i in range((len(c_cont))):
                                 if i!=0 and c_cont[i][0]==c_cont[i-1][0]:
                                     c_cont[i][lin_ind] = str(int(c_cont[i-1][lin_ind])+10)
@@ -587,7 +588,7 @@ class assembly(product):
         return(p_cont,r_cont,c_cont)
             
     # ******************************************************** #
-    def write_out_files(self,order):
+    def write_out_files(self,order,ret_op=0):
         #pth = '\\'.join(self.path.split('\\')[:-1])
         dir_name = '\\3G order dirs\\3G-'+'-'.join(order)
         if not os.path.exists(self.path+dir_name):
@@ -595,14 +596,18 @@ class assembly(product):
         p_cont,r_cont,c_cont= self.gather_content()
         self.header=self.p_header
         self.content=p_cont
-        self.write_file(self.path+dir_name+'\\Stock_Items.csv',mute=1)
+        p_path=self.path+dir_name+'\\Stock_Items.csv'
+        self.write_file(p_path,mute=1)
         
         self.header=self.r_header
         self.content=r_cont
-        self.write_file(self.path+dir_name+'\\Routing.csv',mute=1)
+        r_path=self.path+dir_name+'\\Routing.csv'
+        self.write_file(r_path,mute=1)
         
         self.header=self.c_header
         self.content=c_cont
-        self.write_file(self.path+dir_name+'\\Components.csv',mute=1)
-        
+        c_path=self.path+dir_name+'\\Components.csv'
+        self.write_file(c_path,mute=1)
+        if ret_op==1:
+            return(p_path,r_path,c_path)
         print('Writing Complete')
